@@ -6,6 +6,10 @@ import Link from 'next/link';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm, SubmitHandler } from 'react-hook-form';
+import { useMutation } from 'react-query';
+import { api } from '../../services/api';
+import { queryClient } from '../../services/queryClient';
+import { useRouter } from 'next/router';
 
 type CreateUserFormData = {
     name: string;
@@ -22,14 +26,27 @@ const createUserFormSchema = yup.object().shape({
 })
 
 export default function CreateUser() {
-    const { register, handleSubmit, formState } = useForm({
+    const router = useRouter();
+    const createUser = useMutation(async (user: CreateUserFormData) => {
+        const response = api.post('/users', {
+            user: {
+                ...user,
+                created_at: new Date()
+            }
+        })
+    }, {
+        onSuccess: () => {
+            queryClient.invalidateQueries('users');
+        }
+    })
+
+    const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
         resolver: yupResolver(createUserFormSchema)
     });
-    const errors = formState.errors;
 
     const handleCreateUser: SubmitHandler<CreateUserFormData> = async (values) => {
-        await new Promise(resolver => setTimeout(resolver, 2000));
-        console.log(values);
+        await createUser.mutateAsync(values);
+        router.push('/users');
     }
     return (
         <Box>
@@ -56,7 +73,7 @@ export default function CreateUser() {
                             <Link href="/users" passHref>
                                 <Button as="a" colorScheme="whiteAlpha">Cancelar</Button>
                             </Link>
-                            <Button type="submit" colorScheme="pink" isLoading={formState.isSubmitting}>Salvar</Button>
+                            <Button type="submit" colorScheme="pink" isLoading={isSubmitting}>Salvar</Button>
                         </HStack>
                     </Flex>
                 </Box>
