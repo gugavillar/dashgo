@@ -8,6 +8,8 @@ import { useUsers } from '../../services/hooks/useUsers';
 import { useState } from 'react';
 import { api } from '../../services/api';
 import { queryClient } from '../../services/queryClient';
+import { setupApiAuth } from '../../services/apiAuth';
+import { withSSRAuth } from '../../utils/withSSRAuth';
 
 export default function UsersList() {
   const [page, setPage] = useState(1);
@@ -100,3 +102,11 @@ export default function UsersList() {
     </Box>
   );
 }
+
+export const getServerSideProps = withSSRAuth(async (ctx) => {
+  const apiAuthClient = setupApiAuth(ctx);
+  const response = await apiAuthClient.get('me');
+  return {
+    props: {}
+  }
+})

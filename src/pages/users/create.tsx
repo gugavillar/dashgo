@@ -10,6 +10,8 @@ import { useMutation } from 'react-query';
 import { api } from '../../services/api';
 import { queryClient } from '../../services/queryClient';
 import { useRouter } from 'next/router';
+import { withSSRAuth } from '../../utils/withSSRAuth';
+import { setupApiAuth } from '../../services/apiAuth';
 
 type CreateUserFormData = {
     name: string;
@@ -81,3 +83,11 @@ export default function CreateUser() {
         </Box>
     )
 }
+
+export const getServerSideProps = withSSRAuth(async (ctx) => {
+    const apiAuthClient = setupApiAuth(ctx);
+    const response = await apiAuthClient.get('me');
+    return {
+        props: {}
+    }
+}, { permissions: ['users.create'] })

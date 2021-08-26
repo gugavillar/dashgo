@@ -3,6 +3,8 @@ import { Sidebar } from '../components/Sidebar';
 import { Flex, SimpleGrid, Box, Text, theme } from '@chakra-ui/react';
 import dynamic from 'next/dynamic';
 import { ApexOptions } from 'apexcharts';
+import { withSSRAuth } from "../utils/withSSRAuth";
+import { setupApiAuth } from '../services/apiAuth';
 const Chart = dynamic(() => import('react-apexcharts'), {
     ssr: false
 });
@@ -79,3 +81,14 @@ export default function Dashboard() {
         </Flex>
     );
 }
+
+export const getServerSideProps = withSSRAuth(async (ctx) => {
+    const apiAuthClient = setupApiAuth(ctx);
+    const response = await apiAuthClient.get('me');
+    return {
+        props: {}
+    }
+}, {
+    permissions: ['metrics.list']
+});
+

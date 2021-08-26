@@ -34,6 +34,7 @@ export function makeServer() {
         },
 
         routes() {
+            this.urlPrefix = 'http://localhost:3000';
             this.namespace = 'api';
             this.timing = 750;
 
@@ -43,7 +44,7 @@ export function makeServer() {
                 const pageStart = (Number(page) - 1) * Number(per_page);
                 const pageEnd = pageStart + Number(per_page);
                 const users = this.serialize(schema.all('user')).users.slice(pageStart, pageEnd);
-
+                console.log(users);
                 return new Response(
                     200,
                     { 'x-total-count': String(total) },
@@ -55,7 +56,11 @@ export function makeServer() {
 
 
             this.namespace = '';
-            this.passthrough();
+            this.passthrough(request => request.url.includes('sessions'));
+            this.passthrough(request => request.url.includes('me'));
+            this.passthrough(request => request.url.includes('refresh'));
+
+
         }
     });
     return server;

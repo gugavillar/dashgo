@@ -3,6 +3,9 @@ import { Input } from '../components/Form/Input';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { SubmitHandler, useForm } from 'react-hook-form';
+import { AuthContext } from '../contexts/AuthContext';
+import { useContext } from 'react';
+import { withSSRGuest } from '../utils/withSSRGuest';
 
 type SignInFormData = {
   email: string;
@@ -15,14 +18,14 @@ const signInFormSchema = yup.object().shape({
 });
 
 export default function SignIn() {
+  const { signIn } = useContext(AuthContext);
   const { register, handleSubmit, formState } = useForm({
     resolver: yupResolver(signInFormSchema)
   });
   const errors = formState.errors;
 
   const handleSignIn: SubmitHandler<SignInFormData> = async (values) => {
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    console.log(values);
+    await signIn(values);
   }
   return (
     <Flex
@@ -62,3 +65,9 @@ export default function SignIn() {
     </Flex>
   )
 }
+
+export const getServerSideProps = withSSRGuest(async (ctx) => {
+  return {
+    props: {}
+  }
+})
